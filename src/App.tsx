@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/tauri";
+import { useEffect } from "react";
 import "./App.css";
 import { ReminderInsert } from "./types/Reminder";
 import { DataTable } from "./components/remindersTable/data-table";

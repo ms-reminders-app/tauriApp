@@ -22,8 +22,8 @@ export default defineConfig(async () => ({
   build: {
     rollupOptions: {
       input: {
-        main: resolve(import.meta.url, "index.html"),
-        notification: resolve(import.meta.url, "notification.html"),
+        main: resolve(import.meta.dirname, "index.html"),
+        notification: resolve(import.meta.dirname, "notification.html"),
       },
     },
   },
