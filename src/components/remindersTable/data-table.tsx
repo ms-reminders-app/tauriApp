@@ -1,7 +1,4 @@
-import React from 'react';
-
 import {
-  type ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable
