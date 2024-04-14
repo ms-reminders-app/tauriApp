@@ -1,12 +1,12 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
-use diesel::{QueryDsl, RunQueryDsl, SelectableHelper, SqliteConnection};
-
-use db::database;
 use crate::db::models::*;
+use db::{database, queries::Queries};
+use sqlx::{Pool, Sqlite};
 
 mod db;
 
@@ -17,44 +17,23 @@ fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
-fn get_reminders(db_connection: tauri::State<Arc<Mutex<SqliteConnection>>>) -> Result<Vec<Reminder>, String> {
-    use db::schema::reminders::dsl::*;
-
-    let db_connection_clone = db_connection.clone();
-    let mut connection = match db_connection_clone.lock() {
-        Ok(val) => {
-            Ok(val)
-        }
-        Err(_) => {
-            Err(String::from("Unable to connect to the database"))
-        }
-    }?;
-
-    let reminders_result = reminders
-        .select(Reminder::as_select())
-        .load(&mut *connection);
-
-    match reminders_result {
-        Ok(val) => {
-            Ok(val)
-        }
-        Err(_) => {
-            Err(String::from("Unable to select reminders"))
-        }
-    }
-
-    // Ok(results)
+async fn get_reminders(
+    queries_state: tauri::State<'_, Arc<Mutex<Queries>>>,
+) -> Result<Vec<Reminder>, String> {
+    let queries = queries_state.lock().await;
+    queries.get_reminders().await.map_err(|e| e.to_string())
 }
 
 fn main() {
-    let db_connection: Arc<Mutex<SqliteConnection>> = Arc::new(Mutex::new(
-        database::establish_connection()
-    ));
+    let db_pool: Pool<Sqlite> = tauri::async_runtime::block_on(database::create_connection_pool())
+        .expect("error while creating connection pool");
+
+    let queries = Arc::new(Mutex::new(Queries::new(db_pool)));
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![greet])
         .invoke_handler(tauri::generate_handler![get_reminders])
-        .manage(db_connection)
+        .manage(queries)
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

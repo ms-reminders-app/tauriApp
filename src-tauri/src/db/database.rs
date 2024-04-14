@@ -1,15 +1,16 @@
 use std::env;
 
-use diesel::prelude::*;
+use sqlx::{sqlite::SqlitePoolOptions, Pool, Sqlite};
+
 use dotenvy::dotenv;
 use log::info;
 
-pub fn establish_connection() -> SqliteConnection {
-    info!("started to establish sqlite connection",);
+pub async fn create_connection_pool() -> Result<Pool<Sqlite>, sqlx::Error> {
+    info!("started to establish sqlite connection pool",);
 
     dotenv().ok();
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    SqliteConnection::establish(&database_url).unwrap_or_else(|_| panic!("Error connecting to the database, {}",
-                                                                         database_url))
+    let pool = SqlitePoolOptions::new().connect(&database_url).await?;
+    Ok(pool)
 }

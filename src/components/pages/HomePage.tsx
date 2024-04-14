@@ -1,5 +1,4 @@
 // import { remindersState } from "@/state/remindersState";
-import { ReminderInsert } from "@/types/Reminder";
 // import { useAtom } from "jotai";
 import { useEffect } from "react";
 import { DataTable } from "../remindersTable/data-table";
@@ -10,6 +9,12 @@ function HomePage() {
   // const [reminders, setReminders] = useAtom(remindersState);
   // const queryClient = useQueryClient();
   const reminders = useQuery({ queryKey: ['reminders'], queryFn: getRemindersFromDB })
+
+  useEffect(() => {
+    if (import.meta.env.MODE === 'development') {
+      console.log("components/pages/HomePage.tsx: Reminders changed to ", reminders.data); // log reminders every time it is changed, while in development
+    }
+  }, [reminders.data]);
 
   return (
     <div className="p-2">
