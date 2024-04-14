@@ -5,7 +5,7 @@ export const reminderSchema = z.object({
     title: z.string(),
     description: z.string(),
     completed: z.boolean(),
-    datetime: z.number(),
+    due: z.string(),
     reminder: z.number(),
 })
 
