@@ -1,45 +1,22 @@
-import { remindersState } from "@/state/remindersState";
+// import { remindersState } from "@/state/remindersState";
 import { ReminderInsert } from "@/types/Reminder";
-import { useAtom } from "jotai";
+// import { useAtom } from "jotai";
 import { useEffect } from "react";
 import { DataTable } from "../remindersTable/data-table";
+import { useQuery, /* useQueryClient */ } from "@tanstack/react-query";
+import { getRemindersFromDB } from "@/api";
 
 function HomePage() {
-  const [reminders, setReminders] = useAtom(remindersState);
-
-  // fill with test data
-  useEffect(() => {
-    const testReminders: ReminderInsert[] = [
-      {
-        title: "Test 1",
-        description: "This is test 1",
-        completed: false,
-        datetime: Date.now(),
-        reminder: 0
-      },
-      {
-        title: "Test 2",
-        description: "This is test 2",
-        completed: false,
-        datetime: Date.now(),
-        reminder: 0
-      },
-      {
-        title: "Test 3",
-        description: "This is test 3",
-        completed: false,
-        datetime: Date.now(),
-        reminder: 0
-      }
-    ];
-
-    setReminders(testReminders);
-  }, []) // TODO: FILL FROM LOCALSTORAGE OR RUST
+  // const [reminders, setReminders] = useAtom(remindersState);
+  // const queryClient = useQueryClient();
+  const reminders = useQuery({ queryKey: ['reminders'], queryFn: getRemindersFromDB })
 
   return (
     <div className="p-2">
       <h1 className="text-center text-2xl">Reminders</h1>
-      <DataTable data={reminders} />
+      {reminders.isLoading ? <p>Loading...</p> :
+        <DataTable data={reminders.data ?? []} />
+      }
     </div>
   );
 }
