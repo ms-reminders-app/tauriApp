@@ -1,0 +1,15 @@
+{
+  "rust-analyzer.linkedProjects": [
+    ".\\src-tauri\\Cargo.toml",
+    ".\\src-tauri\\Cargo.toml"
+  ],
+  "sqltools.useNodeRuntime": true,
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "name": "Reminders",
+      "database": "${workspaceFolder:tauri_app}/src-tauri/reminders.db"
+    }
+  ]
+}
