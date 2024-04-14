@@ -43,10 +43,10 @@ export const columns: ColumnDef<ReminderInsert>[] = [
         }
     },
     {
-        accessorKey: "datetime",
+        accessorKey: "due",
         header: "Date",
         cell: ({ row }) => {
-            return new Date(parseInt(row.getValue("datetime"))).toLocaleString().split(":").slice(0, 2).join(":");
+            return new Date(row.getValue("due")).toLocaleString().split(":").slice(0, 2).join(":");
         }
     },
     {
