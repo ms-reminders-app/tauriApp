@@ -1,7 +1,7 @@
 use serde::Serialize;
 use sqlx::prelude::*;
 
-#[derive(Serialize, FromRow)]
+#[derive(Serialize, FromRow, Clone, Debug)]
 pub struct Reminder {
     pub id: i32,
     pub title: String,
@@ -9,4 +9,5 @@ pub struct Reminder {
     pub completed: bool,
     pub due: String,
     pub reminder: f32,
+    pub snoozed_due: String,
 }
