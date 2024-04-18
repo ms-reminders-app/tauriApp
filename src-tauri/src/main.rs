@@ -1,14 +1,17 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::sync::Arc;
+use reminders_subscribe::{RemindersSubscribe, Subscriber};
+use std::{borrow::BorrowMut, sync::Arc};
 use tokio::sync::Mutex;
 
 use crate::db::models::*;
 use db::{database, queries::Queries};
 use sqlx::{Pool, Sqlite};
 
+mod background_service;
 mod db;
+mod reminders_subscribe;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -29,6 +32,21 @@ fn main() {
         .expect("error while creating connection pool");
 
     let queries = Arc::new(Mutex::new(Queries::new(db_pool)));
+
+    let queries_clone = queries.clone();
+
+    let reminders_subscriber = Arc::new(std::sync::Mutex::new(RemindersSubscribe::new()));
+
+    let reminders_subscriber_clone = reminders_subscriber.clone();
+
+    tauri::async_runtime::spawn(async move {
+        let reminders = queries_clone.lock().await.get_reminders().await.unwrap();
+        reminders_subscriber_clone
+            .lock()
+            .unwrap()
+            .set_value(Arc::new(std::sync::Mutex::new(reminders)));
+        background_service::create_service(reminders_subscriber_clone.clone()).await;
+    });
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![greet])
