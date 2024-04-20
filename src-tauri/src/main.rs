@@ -39,19 +39,29 @@ fn main() {
 
     let reminders_subscriber_clone = reminders_subscriber.clone();
 
-    tauri::async_runtime::spawn(async move {
-        let reminders = queries_clone.lock().await.get_reminders().await.unwrap();
-        reminders_subscriber_clone
-            .lock()
-            .unwrap()
-            .set_value(Arc::new(std::sync::Mutex::new(reminders)));
-        background_service::create_service(reminders_subscriber_clone.clone()).await;
-    });
+    tauri::async_runtime::spawn(async move {});
 
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![greet])
         .invoke_handler(tauri::generate_handler![get_reminders])
         .manage(queries)
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .setup(|app| {
+            let handle = app.handle();
+
+            tauri::async_runtime::spawn(async move {
+                let reminders = queries_clone.lock().await.get_reminders().await.unwrap();
+                reminders_subscriber_clone
+                    .lock()
+                    .unwrap()
+                    .set_value(Arc::new(std::sync::Mutex::new(reminders)));
+                background_service::create_service(reminders_subscriber_clone.clone(), &handle)
+                    .await;
+            });
+
+            Ok(())
+        })
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application");
+
+    app.run(|_, _| {});
 }

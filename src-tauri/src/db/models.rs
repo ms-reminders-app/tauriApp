@@ -1,7 +1,7 @@
 use serde::Serialize;
 use sqlx::prelude::*;
 
-#[derive(Serialize, FromRow, Clone, Debug)]
+#[derive(Serialize, FromRow, Clone, Debug, PartialEq)]
 pub struct Reminder {
     pub id: i32,
     pub title: String,
