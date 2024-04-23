@@ -19,4 +19,15 @@ impl Queries {
         let reminders = reminders.fetch_all(&self.db_pool).await?;
         Ok(reminders)
     }
+
+    pub async fn get_due_reminders(&self) -> Result<Vec<Reminder>, sqlx::Error> {
+        let reminders = sqlx::query_as::<_, Reminder>(
+            r#"
+            SELECT * FROM reminders
+            WHERE snoozed_due <= datetime('now') AND completed = 0
+            "#,
+        );
+        let reminders = reminders.fetch_all(&self.db_pool).await?;
+        Ok(reminders)
+    }
 }
