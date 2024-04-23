@@ -15,6 +15,9 @@ pub fn check_for_due_reminders(reminders: Vec<Reminder>) -> Option<Vec<Reminder>
     let due_reminders = reminders
         .iter()
         .filter(|reminder| {
+            if reminder.completed == true {
+                return false;
+            }
             let date_from_snoozed_due = chrono::NaiveDateTime::parse_from_str(
                 reminder.snoozed_due.as_str(),
                 "%Y-%m-%d %H:%M:%S",
@@ -38,9 +41,9 @@ pub async fn create_service(
     reminders_subscriber: Arc<Mutex<RemindersSubscribe>>,
     app: &tauri::AppHandle,
 ) {
-    let mut reminders: Arc<Mutex<Vec<Reminder>>> = Arc::new(Mutex::new(vec![]));
+    let reminders: Arc<Mutex<Vec<Reminder>>> = Arc::new(Mutex::new(vec![]));
 
-    let mut reminders_clone = reminders.clone();
+    let reminders_clone = reminders.clone();
 
     reminders_subscriber
         .lock()
@@ -89,6 +92,7 @@ pub async fn create_service(
             .always_on_top(true)
             .resizable(false)
             .inner_size(500.0, 400.0)
+            .title("Notifications")
             .build()
             .unwrap();
         }
